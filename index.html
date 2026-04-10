@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工程管理ボード</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0f1e;
+      --panel:     #0d1530;
+      --border:    #1e3a5f;
+      --accent:    #00c8ff;
+      --accent2:   #00ff9d;
+      --accent3:   #ffb300;
+      --accent4:   #ff4d6d;
+      --accent5:   #a855f7;
+      --accent6:   #22d3ee;
+      --text:      #e2eaf6;
+      --muted:     #7a92b4;
+      --label:     #94b8d8;
+      --glow:      0 0 8px rgba(0,200,255,0.4);
+      --glow-g:    0 0 8px rgba(0,255,157,0.4);
+      --glow-y:    0 0 8px rgba(255,179,0,0.5);
+      --glow-r:    0 0 8px rgba(255,77,109,0.5);
+      --glow-p:    0 0 8px rgba(168,85,247,0.5);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 10px;
+      gap: 8px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #0d1a3a 0%, #0d2040 100%);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent);
+      border-radius: 6px;
+      box-shadow: var(--glow);
+      position: relative;
+    }
+
+    .header::before {
+      content: '工程管理ボード';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-shadow: 0 0 16px rgba(0,200,255,0.7);
+      pointer-events: none;
+    }
+
+    .header-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-field:last-child { justify-content: flex-end; }
+
+    .header-label {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .header-value {
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+      min-width: 80px;
+      font-size: 14px;
+      color: var(--accent);
+      text-align: center;
+      padding: 2px 4px;
+    }
+
+    /* ── GRID BODY ── */
+    .grid-main {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      align-items: start;
+    }
+
+    .grid-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .panel-body {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    /* ── METRIC ROWS ── */
+    .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      padding-bottom: 6px;
+      gap: 8px;
+    }
+
+    .metric:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--label);
+      white-space: nowrap;
+    }
+
+    .metric-label::before { content: '■ '; }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+      letter-spacing: 0.03em;
+    }
+
+    .metric-unit {
+      font-size: 10px;
+      color: var(--muted);
+      margin-left: 2px;
+    }
+
+    .metric-sub {
+      font-size: 10px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ── COLOR THEMES ── */
+    /* D - blue */
+    .theme-d .panel-header { background: rgba(0,120,200,0.2); color: #60b8ff; border-bottom-color: rgba(0,120,200,0.4); }
+    .theme-d .panel-header .badge { background: #005fa3; color: #60b8ff; }
+    .theme-d .metric-value { color: #60b8ff; text-shadow: 0 0 10px rgba(96,184,255,0.5); }
+
+    /* Q - green */
+    .theme-q .panel-header { background: rgba(0,180,100,0.2); color: #00e07a; border-bottom-color: rgba(0,180,100,0.4); }
+    .theme-q .panel-header .badge { background: #00703e; color: #00e07a; }
+    .theme-q .metric-value { color: #00e07a; text-shadow: 0 0 10px rgba(0,224,122,0.5); }
+
+    /* C - yellow */
+    .theme-c .panel-header { background: rgba(220,150,0,0.2); color: #ffc533; border-bottom-color: rgba(220,150,0,0.4); }
+    .theme-c .panel-header .badge { background: #7a5200; color: #ffc533; }
+    .theme-c .metric-value { color: #ffc533; text-shadow: 0 0 10px rgba(255,197,51,0.5); }
+
+    /* S - red */
+    .theme-s .panel-header { background: rgba(220,50,60,0.2); color: #ff6b78; border-bottom-color: rgba(220,50,60,0.4); }
+    .theme-s .panel-header .badge { background: #7a1520; color: #ff6b78; }
+    .theme-s .metric-value { color: #ff6b78; text-shadow: 0 0 10px rgba(255,107,120,0.5); }
+
+    /* E - purple */
+    .theme-e .panel-header { background: rgba(130,60,210,0.2); color: #c084fc; border-bottom-color: rgba(130,60,210,0.4); }
+    .theme-e .panel-header .badge { background: #5b2198; color: #c084fc; }
+    .theme-e .metric-value { color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,0.5); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      margin-top: 2px;
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ── STATUS TAG ── */
+    .tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .tag-ok   { background: rgba(0,200,100,0.2); color: #00e07a; border: 1px solid rgba(0,200,100,0.4); }
+    .tag-warn { background: rgba(255,180,0,0.2);  color: #ffc533; border: 1px solid rgba(255,180,0,0.4); }
+    .tag-ng   { background: rgba(255,60,80,0.2);  color: #ff6b78; border: 1px solid rgba(255,60,80,0.4); }
+
+    /* ── ISSUE TABLE PANEL ── */
+    .panel-issue {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent4);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-issue-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(255,60,80,0.15);
+      border-bottom: 1px solid rgba(255,60,80,0.3);
+      color: #ff6b78;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .panel-issue-header .badge {
+      background: #7a1520;
+      color: #ff6b78;
+    }
+
+    /* BLINK animation for issue header */
+    .blink-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff4d6d;
+      box-shadow: 0 0 8px #ff4d6d;
+      animation: blink 1.2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    /* ISSUE TABLE */
+    .issue-table-wrap {
+      overflow-x: auto;
+      padding: 8px;
+    }
+
+    table.issue-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    table.issue-table th {
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-weight: 600;
+      padding: 5px 8px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.issue-table td {
+      padding: 6px 8px;
+      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    table.issue-table tr:last-child td { border-bottom: none; }
+
+    table.issue-table td.no {
+      text-align: center;
+      color: var(--muted);
+      font-weight: 700;
+      width: 32px;
+    }
+
+    .impact-tag {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .impact-q { background: rgba(0,200,100,0.2);  color: #00e07a; }
+    .impact-c { background: rgba(255,180,0,0.2);  color: #ffc533; }
+    .impact-d { background: rgba(0,120,200,0.2);  color: #60b8ff; }
+    .impact-s { background: rgba(255,60,80,0.2);  color: #ff6b78; }
+    .impact-e { background: rgba(130,60,210,0.2); color: #c084fc; }
+
+    .status-open  { background: rgba(255,60,80,0.2);  color: #ff6b78; border: 1px solid rgba(255,60,80,0.4);  padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; }
+    .status-done  { background: rgba(0,200,100,0.15); color: #00e07a; border: 1px solid rgba(0,200,100,0.3);  padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+    .status-wip   { background: rgba(255,180,0,0.15); color: #ffc533; border: 1px solid rgba(255,180,0,0.3);  padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+
+    /* ── NOTICE PANEL ── */
+    .panel-notice {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--accent2);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-notice-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(0,255,157,0.1);
+      border-bottom: 1px solid rgba(0,255,157,0.25);
+      color: var(--accent2);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .panel-notice-header .badge {
+      background: #005a38;
+      color: var(--accent2);
+    }
+
+    .notice-list {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .notice-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 5px 8px;
+      background: rgba(255,255,255,0.03);
+      border-left: 2px solid var(--accent2);
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+    }
+
+    .notice-time {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    /* ── CLOCK ── */
+    .clock-area {
+      text-align: right;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 4px 6px 0;
+    }
+
+    #clock {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-shadow: var(--glow);
+      vertical-align: middle;
+    }
+
+    /* ── TICKER ── */
+    .ticker {
+      background: rgba(0,200,255,0.08);
+      border-top: 1px solid rgba(0,200,255,0.2);
+      padding: 4px 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 30s linear infinite;
+    }
+
+    @keyframes ticker {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* gauge circle */
+    .gauge-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .gauge {
+      position: relative;
+      width: 70px;
+      height: 70px;
+    }
+
+    .gauge svg { transform: rotate(-90deg); }
+
+    .gauge-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .gauge-sub {
+      font-size: 8px;
+      color: var(--muted);
+      margin-top: -2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-field">
+      <span class="header-label">ライン名：</span>
+      <span class="header-value">第1組立ライン</span>
+    </div>
+    <div class="header-field" style="justify-content:center;">
+      <!-- title is ::before pseudo -->
+    </div>
+    <div class="header-field" style="justify-content:flex-end; gap:16px;">
+      <span>
+        <span class="header-label">日付：</span>
+        <span class="header-value" id="date-display"></span>
+      </span>
+      <span>
+        <span class="header-label">責任者：</span>
+        <span class="header-value">田中　一郎</span>
+      </span>
+      <div class="clock-area"><span id="clock">--:--:--</span></div>
+    </div>
+  </header>
+
+  <!-- ══ ROW 1: D / Q / C ════════════════════════════════════════ -->
+  <div class="grid-main">
+
+    <!-- ① D 納期・進捗 -->
+    <div class="panel theme-d">
+      <div class="panel-header">
+        <span class="badge">①</span>
+        D（納期・進捗）
+        <span class="tag tag-warn" style="margin-left:auto;">やや遅れ</span>
+      </div>
+      <div class="panel-body">
+        <div class="metric">
+          <span class="metric-label">計画数</span>
+          <span><span class="metric-value">480</span><span class="metric-unit">個</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">実績数</span>
+          <span><span class="metric-value">452</span><span class="metric-unit">個</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">達成率</span>
+          <div class="progress-wrap" style="flex:1; margin-left:12px;">
+            <div class="progress-label">
+              <span></span>
+              <span style="font-size:14px;font-weight:700;color:#60b8ff;">94.2%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:94.2%;background:linear-gradient(90deg,#005fa3,#60b8ff);"></div>
+            </div>
+          </div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">遅れ/進み理由</span>
+          <span class="metric-sub" style="text-align:right;max-width:160px;">部品供給遅延<br>（午後回収予定）</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② Q 品質 -->
+    <div class="panel theme-q">
+      <div class="panel-header">
+        <span class="badge">②</span>
+        Q（品質）
+        <span class="tag tag-ok" style="margin-left:auto;">良好</span>
+      </div>
+      <div class="panel-body">
+        <div class="metric">
+          <span class="metric-label">不良件数</span>
+          <span><span class="metric-value">3</span><span class="metric-unit">件</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">不良内容</span>
+          <span class="metric-sub">外観キズ×2<br>寸法NG×1</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">発生工程</span>
+          <span class="metric-sub" style="text-align:right;">ST-3 組付工程</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">対策（暫定）</span>
+          <span class="metric-sub" style="text-align:right;max-width:160px;">治具点検・<br>作業者再指導</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">対策（恒久）</span>
+          <span class="metric-sub" style="text-align:right;max-width:160px;">ポカヨケ設計<br>検討中</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ C コスト -->
+    <div class="panel theme-c">
+      <div class="panel-header">
+        <span class="badge">③</span>
+        C（コスト）
+        <span class="tag tag-warn" style="margin-left:auto;">要注意</span>
+      </div>
+      <div class="panel-body">
+        <div class="metric">
+          <span class="metric-label">工数（実績）</span>
+          <span><span class="metric-value">38.5</span><span class="metric-unit">h</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">残業時間</span>
+          <span><span class="metric-value" style="color:#ff6b78;">2.5</span><span class="metric-unit">h</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">ロス時間</span>
+          <span><span class="metric-value">1.2</span><span class="metric-unit">h</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">歩留まり</span>
+          <div class="progress-wrap" style="flex:1;margin-left:12px;">
+            <div class="progress-label">
+              <span></span>
+              <span style="font-size:14px;font-weight:700;color:#ffc533;">99.4%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:99.4%;background:linear-gradient(90deg,#7a5200,#ffc533);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ S 安全 -->
+    <div class="panel theme-s">
+      <div class="panel-header">
+        <span class="badge">④</span>
+        S（安全）
+        <span class="tag tag-ok" style="margin-left:auto;">異常なし</span>
+      </div>
+      <div class="panel-body">
+        <div>
+          <div class="metric">
+            <span class="metric-label">災害ゼロ日数</span>
+            <span><span class="metric-value" style="font-size:28px;color:#ff6b78;">365</span><span class="metric-unit">日</span></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">ヒヤリハット件数</span>
+            <span><span class="metric-value">0</span><span class="metric-unit">件/日</span></span>
+          </div>
+        </div>
+        <div>
+          <div class="metric">
+            <span class="metric-label">KY活動内容</span>
+            <span class="metric-sub" style="text-align:right;max-width:180px;">フォークリフト動線<br>確認・足元注意喚起</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">危険箇所・対策</span>
+            <span class="metric-sub" style="text-align:right;max-width:180px;">ST-7 段差にテープ<br>貼付済み</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑤ E 環境 -->
+    <div class="panel theme-e">
+      <div class="panel-header">
+        <span class="badge">⑤</span>
+        E（環境）
+        <span class="tag tag-ok" style="margin-left:auto;">正常</span>
+      </div>
+      <div class="panel-body">
+        <div class="metric">
+          <span class="metric-label">電力使用量</span>
+          <span><span class="metric-value">124</span><span class="metric-unit">kWh</span></span>
+        </div>
+        <div class="progress-bar-bg" style="margin-top:-4px;">
+          <div class="progress-bar-fill" style="width:78%;background:linear-gradient(90deg,#5b2198,#c084fc);"></div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">廃棄物量</span>
+          <span><span class="metric-value">3.2</span><span class="metric-unit">kg</span></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">異常有無</span>
+          <span class="tag tag-ok">なし</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid-main -->
+
+  <!-- ══ ROW 2: 異常・課題管理 / 連絡事項 ═══════════════════════ -->
+  <div class="grid-bottom">
+
+    <!-- ⑥ 異常・課題管理 -->
+    <div class="panel-issue">
+      <div class="panel-issue-header">
+        <div class="blink-dot"></div>
+        <span class="badge" style="background:#7a1520;color:#ff6b78;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">⑥</span>
+        異常・課題管理（最重要エリア）
+      </div>
+      <div class="issue-table-wrap">
+        <table class="issue-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>発生日</th>
+              <th>内容</th>
+              <th>影響</th>
+              <th>原因</th>
+              <th>対策</th>
+              <th>担当</th>
+              <th>期限</th>
+              <th>状況</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="no">1</td>
+              <td>3/29</td>
+              <td>部品供給遅延</td>
+              <td><span class="impact-tag impact-d">D</span></td>
+              <td>サプライヤー在庫切れ</td>
+              <td>代替品手配</td>
+              <td>鈴木</td>
+              <td>4/2</td>
+              <td><span class="status-wip">対応中</span></td>
+            </tr>
+            <tr>
+              <td class="no">2</td>
+              <td>3/30</td>
+              <td>ST-3 外観キズ発生</td>
+              <td><span class="impact-tag impact-q">Q</span></td>
+              <td>治具磨耗</td>
+              <td>治具交換・再教育</td>
+              <td>田中</td>
+              <td>4/1</td>
+              <td><span class="status-wip">対応中</span></td>
+            </tr>
+            <tr>
+              <td class="no">3</td>
+              <td>3/28</td>
+              <td>残業超過</td>
+              <td><span class="impact-tag impact-c">C</span></td>
+              <td>計画見直し不足</td>
+              <td>工程バランス調整</td>
+              <td>山本</td>
+              <td>4/5</td>
+              <td><span class="status-open">未着手</span></td>
+            </tr>
+            <tr>
+              <td class="no">4</td>
+              <td>3/25</td>
+              <td>ヒヤリハット 段差</td>
+              <td><span class="impact-tag impact-s">S</span></td>
+              <td>通路マーキング不備</td>
+              <td>テープ貼付完了</td>
+              <td>佐藤</td>
+              <td>3/31</td>
+              <td><span class="status-done">完了</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ⑦ 連絡事項・申し送り -->
+    <div class="panel-notice">
+      <div class="panel-notice-header">
+        <span class="badge" style="background:#005a38;color:#00e07a;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">⑦</span>
+        連絡事項・申し送り
+      </div>
+      <div class="notice-list">
+        <div class="notice-item">
+          <span class="notice-time">08:00</span>
+          <span>本日は品質監査の立会いがあります。ST-5付近を整理整頓してください。</span>
+        </div>
+        <div class="notice-item">
+          <span class="notice-time">09:30</span>
+          <span>午後14:00より全体ミーティング実施。ライン停止10分。</span>
+        </div>
+        <div class="notice-item">
+          <span class="notice-time">10:15</span>
+          <span>部品A-231の代替品が午後入荷予定。到着後すぐに生産再開。</span>
+        </div>
+        <div class="notice-item">
+          <span class="notice-time">11:00</span>
+          <span>翌日シフト変更あり。夜勤担当は掲示板を確認すること。</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid-bottom -->
+
+  <!-- ══ TICKER ══════════════════════════════════════════════════ -->
+  <div class="ticker">
+    <span class="ticker-inner">
+      【本日の生産目標】 第1ライン：480個　第2ライン：360個　第3ライン：520個　&nbsp;&nbsp;|&nbsp;&nbsp;
+      【品質目標】 不良率 0.5% 以下を維持　&nbsp;&nbsp;|&nbsp;&nbsp;
+      【お知らせ】 4月5日（日）は定期点検のため全ライン停止です。準備を忘れずに。　&nbsp;&nbsp;|&nbsp;&nbsp;
+      【安全第一】 作業前に KY 活動を必ず実施してください。
+    </span>
+  </div>
+
+  <script>
+    // ── Clock & Date ──────────────────────────────────────────
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function setDate() {
+      const now = new Date();
+      const days = ['日','月','火','水','木','金','土'];
+      document.getElementById('date-display').textContent =
+        `${now.getFullYear()}/${pad(now.getMonth()+1)}/${pad(now.getDate())}（${days[now.getDay()]}）`;
+    }
+
+    tick();
+    setDate();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
