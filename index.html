@@ -5,33 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>工程管理ボード</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #0a0f1e;
-      --panel:     #0d1530;
-      --border:    #1e3a5f;
-      --accent:    #00c8ff;
-      --accent2:   #00ff9d;
-      --accent3:   #ffb300;
-      --accent4:   #ff4d6d;
-      --accent5:   #a855f7;
-      --accent6:   #22d3ee;
-      --text:      #e2eaf6;
-      --muted:     #7a92b4;
-      --label:     #94b8d8;
-      --glow:      0 0 8px rgba(0,200,255,0.4);
-      --glow-g:    0 0 8px rgba(0,255,157,0.4);
-      --glow-y:    0 0 8px rgba(255,179,0,0.5);
-      --glow-r:    0 0 8px rgba(255,77,109,0.5);
-      --glow-p:    0 0 8px rgba(168,85,247,0.5);
+      --bg:        #f0ede8;
+      --board:     #faf8f5;
+      --panel:     #ffffff;
+      --border:    #c8c0b0;
+      --line:      #d8d0c4;
+      --text:      #2a2218;
+      --muted:     #8a8070;
+      --label:     #5a5045;
+
+      /* マーカーカラー */
+      --col-d:     #1a6bbf;   /* 青 */
+      --col-q:     #1a9c4a;   /* 緑 */
+      --col-c:     #d97b00;   /* オレンジ */
+      --col-s:     #c0392b;   /* 赤 */
+      --col-e:     #7b3fa0;   /* 紫 */
+      --col-issue: #c0392b;
+      --col-notice:#1a9c4a;
+
+      --shadow: 2px 3px 8px rgba(0,0,0,0.10);
     }
 
     html, body {
       height: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI', sans-serif;
+      font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
       font-size: 13px;
       line-height: 1.5;
     }
@@ -40,8 +44,13 @@
       display: flex;
       flex-direction: column;
       min-height: 100vh;
-      padding: 10px;
-      gap: 8px;
+      padding: 12px;
+      gap: 10px;
+      /* ホワイトボード背景：薄いグリッド線 */
+      background-image:
+        linear-gradient(rgba(180,170,155,0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(180,170,155,0.25) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
 
     /* ── HEADER ── */
@@ -49,12 +58,12 @@
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
-      padding: 10px 16px;
-      background: linear-gradient(135deg, #0d1a3a 0%, #0d2040 100%);
-      border: 1px solid var(--border);
-      border-top: 3px solid var(--accent);
-      border-radius: 6px;
-      box-shadow: var(--glow);
+      padding: 10px 18px;
+      background: var(--board);
+      border: 2px solid #b0a898;
+      border-top: 5px solid #2a2218;
+      border-radius: 4px;
+      box-shadow: var(--shadow);
       position: relative;
     }
 
@@ -64,12 +73,14 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--accent);
-      text-shadow: 0 0 16px rgba(0,200,255,0.7);
+      letter-spacing: 0.18em;
+      color: #2a2218;
       pointer-events: none;
+      /* マーカーで書いたような下線 */
+      border-bottom: 3px solid #d97b00;
+      padding-bottom: 1px;
     }
 
     .header-field {
@@ -88,10 +99,11 @@
 
     .header-value {
       flex: 1;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid #2a2218;
       min-width: 80px;
       font-size: 14px;
-      color: var(--accent);
+      font-weight: 700;
+      color: var(--text);
       text-align: center;
       padding: 2px 4px;
     }
@@ -100,24 +112,25 @@
     .grid-main {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
+      gap: 10px;
       align-items: start;
     }
 
     .grid-bottom {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     /* ── PANEL ── */
     .panel {
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--shadow);
     }
 
     .panel-header {
@@ -127,8 +140,8 @@
       padding: 7px 12px;
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.08em;
-      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.06em;
+      border-bottom: 2px solid var(--border);
     }
 
     .panel-header .badge {
@@ -141,6 +154,7 @@
       font-size: 11px;
       font-weight: 700;
       flex-shrink: 0;
+      border: 2px solid currentColor;
     }
 
     .panel-body {
@@ -156,7 +170,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      border-bottom: 1px dashed var(--line);
       padding-bottom: 6px;
       gap: 8px;
     }
@@ -169,7 +183,7 @@
       white-space: nowrap;
     }
 
-    .metric-label::before { content: '■ '; }
+    .metric-label::before { content: '▸ '; }
 
     .metric-value {
       font-size: 18px;
@@ -192,46 +206,39 @@
 
     /* ── COLOR THEMES ── */
     /* D - blue */
-    .theme-d .panel-header { background: rgba(0,120,200,0.2); color: #60b8ff; border-bottom-color: rgba(0,120,200,0.4); }
-    .theme-d .panel-header .badge { background: #005fa3; color: #60b8ff; }
-    .theme-d .metric-value { color: #60b8ff; text-shadow: 0 0 10px rgba(96,184,255,0.5); }
+    .theme-d .panel-header { background: #e8f0fb; color: var(--col-d); border-bottom-color: #b8d0ee; border-top: 4px solid var(--col-d); }
+    .theme-d .metric-value { color: var(--col-d); }
 
     /* Q - green */
-    .theme-q .panel-header { background: rgba(0,180,100,0.2); color: #00e07a; border-bottom-color: rgba(0,180,100,0.4); }
-    .theme-q .panel-header .badge { background: #00703e; color: #00e07a; }
-    .theme-q .metric-value { color: #00e07a; text-shadow: 0 0 10px rgba(0,224,122,0.5); }
+    .theme-q .panel-header { background: #e8f6ee; color: var(--col-q); border-bottom-color: #b8dfc8; border-top: 4px solid var(--col-q); }
+    .theme-q .metric-value { color: var(--col-q); }
 
-    /* C - yellow */
-    .theme-c .panel-header { background: rgba(220,150,0,0.2); color: #ffc533; border-bottom-color: rgba(220,150,0,0.4); }
-    .theme-c .panel-header .badge { background: #7a5200; color: #ffc533; }
-    .theme-c .metric-value { color: #ffc533; text-shadow: 0 0 10px rgba(255,197,51,0.5); }
+    /* C - orange */
+    .theme-c .panel-header { background: #fdf3e3; color: var(--col-c); border-bottom-color: #f0d8a8; border-top: 4px solid var(--col-c); }
+    .theme-c .metric-value { color: var(--col-c); }
 
     /* S - red */
-    .theme-s .panel-header { background: rgba(220,50,60,0.2); color: #ff6b78; border-bottom-color: rgba(220,50,60,0.4); }
-    .theme-s .panel-header .badge { background: #7a1520; color: #ff6b78; }
-    .theme-s .metric-value { color: #ff6b78; text-shadow: 0 0 10px rgba(255,107,120,0.5); }
+    .theme-s .panel-header { background: #fdecea; color: var(--col-s); border-bottom-color: #f0c0bc; border-top: 4px solid var(--col-s); }
+    .theme-s .metric-value { color: var(--col-s); }
 
     /* E - purple */
-    .theme-e .panel-header { background: rgba(130,60,210,0.2); color: #c084fc; border-bottom-color: rgba(130,60,210,0.4); }
-    .theme-e .panel-header .badge { background: #5b2198; color: #c084fc; }
-    .theme-e .metric-value { color: #c084fc; text-shadow: 0 0 10px rgba(192,132,252,0.5); }
+    .theme-e .panel-header { background: #f3edf8; color: var(--col-e); border-bottom-color: #d8c0ec; border-top: 4px solid var(--col-e); }
+    .theme-e .metric-value { color: var(--col-e); }
 
     /* ── PROGRESS BAR ── */
-    .progress-wrap {
-      margin-top: 2px;
-    }
+    .progress-wrap { margin-top: 2px; }
 
     .progress-bar-bg {
-      height: 6px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 3px;
+      height: 8px;
+      background: var(--line);
+      border-radius: 4px;
       overflow: hidden;
       margin-top: 4px;
     }
 
     .progress-bar-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 4px;
       transition: width 0.5s ease;
     }
 
@@ -245,26 +252,28 @@
     /* ── STATUS TAG ── */
     .tag {
       display: inline-block;
-      padding: 1px 7px;
-      border-radius: 3px;
+      padding: 1px 8px;
+      border-radius: 2px;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.05em;
+      border: 1.5px solid currentColor;
     }
 
-    .tag-ok   { background: rgba(0,200,100,0.2); color: #00e07a; border: 1px solid rgba(0,200,100,0.4); }
-    .tag-warn { background: rgba(255,180,0,0.2);  color: #ffc533; border: 1px solid rgba(255,180,0,0.4); }
-    .tag-ng   { background: rgba(255,60,80,0.2);  color: #ff6b78; border: 1px solid rgba(255,60,80,0.4); }
+    .tag-ok   { color: #1a9c4a; background: #e8f6ee; }
+    .tag-warn { color: #d97b00; background: #fdf3e3; }
+    .tag-ng   { color: #c0392b; background: #fdecea; }
 
     /* ── ISSUE TABLE PANEL ── */
     .panel-issue {
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-top: 3px solid var(--accent4);
-      border-radius: 6px;
+      border: 2px solid #f0c0bc;
+      border-top: 4px solid var(--col-issue);
+      border-radius: 4px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--shadow);
     }
 
     .panel-issue-header {
@@ -272,17 +281,18 @@
       align-items: center;
       gap: 8px;
       padding: 8px 14px;
-      background: rgba(255,60,80,0.15);
-      border-bottom: 1px solid rgba(255,60,80,0.3);
-      color: #ff6b78;
+      background: #fdecea;
+      border-bottom: 2px solid #f0c0bc;
+      color: var(--col-issue);
       font-weight: 700;
       font-size: 13px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
     }
 
     .panel-issue-header .badge {
-      background: #7a1520;
-      color: #ff6b78;
+      background: #fdecea;
+      color: var(--col-issue);
+      border: 2px solid var(--col-issue);
     }
 
     /* BLINK animation for issue header */
@@ -290,8 +300,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #ff4d6d;
-      box-shadow: 0 0 8px #ff4d6d;
+      background: var(--col-issue);
       animation: blink 1.2s infinite;
       flex-shrink: 0;
     }
@@ -314,18 +323,18 @@
     }
 
     table.issue-table th {
-      background: rgba(255,255,255,0.05);
+      background: #f5f0eb;
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 700;
       padding: 5px 8px;
       text-align: center;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
       white-space: nowrap;
     }
 
     table.issue-table td {
       padding: 6px 8px;
-      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      border-bottom: 1px dashed var(--line);
       vertical-align: middle;
       color: var(--text);
     }
@@ -341,30 +350,32 @@
 
     .impact-tag {
       display: inline-block;
-      padding: 1px 5px;
-      border-radius: 3px;
+      padding: 1px 6px;
+      border-radius: 2px;
       font-size: 10px;
       font-weight: 700;
+      border: 1.5px solid currentColor;
     }
 
-    .impact-q { background: rgba(0,200,100,0.2);  color: #00e07a; }
-    .impact-c { background: rgba(255,180,0,0.2);  color: #ffc533; }
-    .impact-d { background: rgba(0,120,200,0.2);  color: #60b8ff; }
-    .impact-s { background: rgba(255,60,80,0.2);  color: #ff6b78; }
-    .impact-e { background: rgba(130,60,210,0.2); color: #c084fc; }
+    .impact-q { color: var(--col-q); background: #e8f6ee; }
+    .impact-c { color: var(--col-c); background: #fdf3e3; }
+    .impact-d { color: var(--col-d); background: #e8f0fb; }
+    .impact-s { color: var(--col-s); background: #fdecea; }
+    .impact-e { color: var(--col-e); background: #f3edf8; }
 
-    .status-open  { background: rgba(255,60,80,0.2);  color: #ff6b78; border: 1px solid rgba(255,60,80,0.4);  padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; }
-    .status-done  { background: rgba(0,200,100,0.15); color: #00e07a; border: 1px solid rgba(0,200,100,0.3);  padding: 1px 6px; border-radius: 3px; font-size: 10px; }
-    .status-wip   { background: rgba(255,180,0,0.15); color: #ffc533; border: 1px solid rgba(255,180,0,0.3);  padding: 1px 6px; border-radius: 3px; font-size: 10px; }
+    .status-open  { color: var(--col-s); background: #fdecea; border: 1.5px solid var(--col-s);  padding: 1px 6px; border-radius: 2px; font-size: 10px; font-weight: 700; }
+    .status-done  { color: var(--col-q); background: #e8f6ee; border: 1.5px solid var(--col-q);  padding: 1px 6px; border-radius: 2px; font-size: 10px; }
+    .status-wip   { color: var(--col-c); background: #fdf3e3; border: 1.5px solid var(--col-c);  padding: 1px 6px; border-radius: 2px; font-size: 10px; }
 
     /* ── NOTICE PANEL ── */
     .panel-notice {
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-top: 3px solid var(--accent2);
-      border-radius: 6px;
+      border: 2px solid #b8dfc8;
+      border-top: 4px solid var(--col-notice);
+      border-radius: 4px;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--shadow);
     }
 
     .panel-notice-header {
@@ -372,17 +383,18 @@
       align-items: center;
       gap: 8px;
       padding: 8px 14px;
-      background: rgba(0,255,157,0.1);
-      border-bottom: 1px solid rgba(0,255,157,0.25);
-      color: var(--accent2);
+      background: #e8f6ee;
+      border-bottom: 2px solid #b8dfc8;
+      color: var(--col-notice);
       font-weight: 700;
       font-size: 13px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
     }
 
     .panel-notice-header .badge {
-      background: #005a38;
-      color: var(--accent2);
+      background: #e8f6ee;
+      color: var(--col-notice);
+      border: 2px solid var(--col-notice);
     }
 
     .notice-list {
@@ -396,9 +408,9 @@
       display: flex;
       gap: 8px;
       align-items: flex-start;
-      padding: 5px 8px;
-      background: rgba(255,255,255,0.03);
-      border-left: 2px solid var(--accent2);
+      padding: 5px 10px;
+      background: #f5f0eb;
+      border-left: 3px solid var(--col-notice);
       border-radius: 0 4px 4px 0;
       font-size: 12px;
     }
@@ -408,6 +420,7 @@
       color: var(--muted);
       white-space: nowrap;
       margin-top: 1px;
+      font-weight: 700;
     }
 
     /* ── CLOCK ── */
@@ -419,19 +432,19 @@
     }
 
     #clock {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--text);
       letter-spacing: 0.1em;
-      text-shadow: var(--glow);
       vertical-align: middle;
     }
 
     /* ── TICKER ── */
     .ticker {
-      background: rgba(0,200,255,0.08);
-      border-top: 1px solid rgba(0,200,255,0.2);
-      padding: 4px 12px;
+      background: #f5f0eb;
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 12px;
       overflow: hidden;
       white-space: nowrap;
       font-size: 11px;
@@ -530,10 +543,10 @@
           <div class="progress-wrap" style="flex:1; margin-left:12px;">
             <div class="progress-label">
               <span></span>
-              <span style="font-size:14px;font-weight:700;color:#60b8ff;">94.2%</span>
+              <span style="font-size:14px;font-weight:700;color:var(--col-d);">94.2%</span>
             </div>
             <div class="progress-bar-bg">
-              <div class="progress-bar-fill" style="width:94.2%;background:linear-gradient(90deg,#005fa3,#60b8ff);"></div>
+              <div class="progress-bar-fill" style="width:94.2%;background:var(--col-d);"></div>
             </div>
           </div>
         </div>
@@ -589,7 +602,7 @@
         </div>
         <div class="metric">
           <span class="metric-label">残業時間</span>
-          <span><span class="metric-value" style="color:#ff6b78;">2.5</span><span class="metric-unit">h</span></span>
+          <span><span class="metric-value" style="color:var(--col-s);">2.5</span><span class="metric-unit">h</span></span>
         </div>
         <div class="metric">
           <span class="metric-label">ロス時間</span>
@@ -600,10 +613,10 @@
           <div class="progress-wrap" style="flex:1;margin-left:12px;">
             <div class="progress-label">
               <span></span>
-              <span style="font-size:14px;font-weight:700;color:#ffc533;">99.4%</span>
+              <span style="font-size:14px;font-weight:700;color:var(--col-c);">99.4%</span>
             </div>
             <div class="progress-bar-bg">
-              <div class="progress-bar-fill" style="width:99.4%;background:linear-gradient(90deg,#7a5200,#ffc533);"></div>
+              <div class="progress-bar-fill" style="width:99.4%;background:var(--col-c);"></div>
             </div>
           </div>
         </div>
@@ -621,7 +634,7 @@
         <div>
           <div class="metric">
             <span class="metric-label">災害ゼロ日数</span>
-            <span><span class="metric-value" style="font-size:28px;color:#ff6b78;">365</span><span class="metric-unit">日</span></span>
+            <span><span class="metric-value" style="font-size:28px;color:var(--col-s);">365</span><span class="metric-unit">日</span></span>
           </div>
           <div class="metric">
             <span class="metric-label">ヒヤリハット件数</span>
@@ -654,7 +667,7 @@
           <span><span class="metric-value">124</span><span class="metric-unit">kWh</span></span>
         </div>
         <div class="progress-bar-bg" style="margin-top:-4px;">
-          <div class="progress-bar-fill" style="width:78%;background:linear-gradient(90deg,#5b2198,#c084fc);"></div>
+          <div class="progress-bar-fill" style="width:78%;background:var(--col-e);"></div>
         </div>
         <div class="metric">
           <span class="metric-label">廃棄物量</span>
